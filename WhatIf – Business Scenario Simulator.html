@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>WhatIf – Business Scenario Simulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--tx:#1b2030;--mu:#667;--ac:#0369a1;--g:#15803d;--r:#b91c1c;--bd:#e3e6ef;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12141c;--card:#1b1f2b;--tx:#e8eaf3;--mu:#9aa1b5;--ac:#38bdf8;--g:#4ade80;--r:#f87171;--bd:#2b3142;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:16px}
+.w{max-width:1000px;margin:auto}h1{margin:0;font-size:24px}.sub{color:var(--mu);margin:2px 0 14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:14px}
+h2{font-size:16px;margin:0 0 8px}.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.k{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px}.k b{display:block;font-size:20px}.k span{color:var(--mu);font-size:12px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:720px){.two{grid-template-columns:1fr}}
+input[type=range]{width:100%;accent-color:var(--ac)}label.ck{display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:14px}label.ck input{margin-top:4px;accent-color:var(--ac)}
+.ub{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:13px}.ub>span{width:150px;flex:none}.tr{flex:1;height:14px;background:var(--bg);border:1px solid var(--bd);border-radius:7px;position:relative;overflow:hidden}.tr i{display:block;height:100%}.ub b{width:120px;text-align:right;flex:none;font-size:12px}
+.sc{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:560px;font-size:13px}th,td{padding:6px 8px;border-bottom:1px solid var(--bd);text-align:right}th:first-child,td:first-child{text-align:left}th{color:var(--mu);font-weight:600}
+svg text{fill:var(--mu);font-size:11px}
+input[type=text]{flex:1;min-width:160px;padding:8px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit}
+button{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.ag p{margin:6px 0;padding:8px 10px;border-radius:8px;background:var(--bg);border-left:3px solid var(--ac)}
+.g{color:var(--g)}.r{color:var(--r)}small{color:var(--mu)}
+</style></head><body><div class="w">
+<h1>WhatIf</h1>
+<div class="sub">AI business scenario simulator · Demo company: Britannia-style biscuit manufacturer · 10,000 t/month baseline (synthetic, ₹ crore)</div>
+
+<div class="card"><div class="two"><div>
+<h2>1 · Strategic decision</h2>
+<div class="row"><label for="gr">Sales growth target: <b id="gv"></b>%</label></div><input type="range" id="gr" min="0" max="40" value="20">
+<div class="row" style="margin-top:8px"><label for="sg">Demand uncertainty: ±<b id="sv"></b>%</label></div><input type="range" id="sg" min="5" max="25" value="10">
+<small>1,000 Monte Carlo runs with random breakdowns, absenteeism, supplier delays and logistics disruption.</small></div>
+<div><h2>Levers</h2><div id="lv"></div></div></div></div>
+
+<div class="kp" id="kp"></div>
+
+<div class="card"><div class="two"><div><h2>2 · Can each function support it?</h2><div id="ut"></div><small>Utilization = required volume ÷ capacity. Red = over 100%.</small></div>
+<div><h2>3 · Simulated outcomes</h2><svg id="hs" viewBox="0 0 320 190" style="width:100%"></svg><small id="hn"></small></div></div></div>
+
+<div class="card"><h2>4 · Strategy comparison at this target</h2><div class="sc"><table id="st"></table></div></div>
+
+<div class="card ag"><h2>5 · WhatIf AI agent</h2><div id="ag"></div>
+<div class="row" style="margin-top:8px"><input type="text" id="q" placeholder="Ask: what is our bottleneck? how much growth can we support?"><button id="ask">Ask</button></div><div id="ans"></div></div>
+
+<div class="card"><h2>How it works (algorithm)</h2><small>1) Build a digital twin of production, workforce, raw-material supply and logistics with baseline capacities → 2) Translate the sales target into volume demand with uncertainty → 3) Apply decision levers (overtime, third shift, hiring, supplier buffer, fleet, co-packer) to each constraint’s capacity → 4) Run Monte Carlo: random demand, plant breakdowns, absenteeism, supplier delays and transport disruption → 5) Fulfilled volume = the minimum across all constraints; the most frequently binding constraint is the bottleneck → 6) Score each strategy on probability of meeting target, fill rate, extra contribution margin and lever cost → 7) Search all lever combinations for the cheapest plan that meets the target with at least 85% probability. This demo uses assumed capacities and costs; replace them with ERP, MES and TMS data.</small></div>
+</div>
+<script>
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const R=rng(77),gs=()=>Math.sqrt(-2*Math.log(R()+1e-9))*Math.cos(6.2832*R()),N=1000;
+const SH=Array.from({length:N},()=>({z:gs(),pf:R()<.15,pm:.03+.05*R(),az:gs(),sf:R()<.2,sm:.04+.06*R(),lz:gs()}));
+const D0=10000,CM=.0022,NM=["Production","Workforce","Raw materials","Logistics"];
+const LV=[["ot","Overtime (+6% output, higher absenteeism)",.5],["s3","Add third shift at plants (+3,500 t production)",1.2],["hire","Hire 150 workers (+900 t workforce capacity)",.35],["raw","Supplier contracts and +20 days safety stock (+1,300 t)",.2],["fleet","Add 40 trucks or 3PL (+1,000 t dispatch)",.4],["cop","Use co-packers (+1,000 t production and labor)",.5]];
+const ST={ot:0,s3:0,hire:0,raw:0,fleet:0,cop:0};
+const caps=L=>[(11800+3500*L.s3+1000*L.cop)*(1+.06*L.ot),(11000+900*L.hire+1000*L.cop)*(1+.06*L.ot),11500+1300*L.raw,11600+1000*L.fleet];
+const cost=L=>LV.reduce((s,v)=>s+(L[v[0]]?v[2]:0),0);
+function sim(g,L,sg,hist){const C=caps(L),bind=[0,0,0,0];let ok=0,fl=0,fs=0;const H=hist?[]:null;
+ for(const s of SH){const dem=D0*(1+g)*Math.max(.7,1+sg*s.z),c=[C[0]*(1-(s.pf?s.pm:0)),C[1]*(1-Math.max(0,.03+.015*L.ot+.015*s.az)),C[2]*(1-(s.sf?s.sm:0)),C[3]*(1-Math.max(0,.02+.02*s.lz))],m=Math.min(...c),f=Math.min(dem,m);
+  if(m>=.98*Math.min(dem,D0*(1+g)))ok++;else bind[c.indexOf(m)]++;fl+=f;fs+=f/dem;if(H)H.push((f/D0-1)*100)}
+ return{p:ok/N,fill:fs/N,ful:fl/N,bind,H,cost:cost(L)}}
+const f=(v,d=0)=>v.toLocaleString("en-IN",{maximumFractionDigits:d,minimumFractionDigits:d});
+function best(g,sg){let b=null,bm=null;for(let m=0;m<64;m++){const L={ot:m&1,s3:m>>1&1,hire:m>>2&1,raw:m>>3&1,fleet:m>>4&1,cop:m>>5&1},r=sim(g,L,sg);if(r.p>=.85&&(!b||r.cost<b.r.cost))b={L,r};if(!bm||r.p>bm.r.p)bm={L,r}}return b||bm}
+const nm=L=>LV.filter(v=>L[v[0]]).map(v=>v[1].split(" (")[0]).join(" + ")||"No action";
+let G,SG,CUR,BASE,BEST;
+function render(){G=+document.getElementById("gr").value/100;SG=+document.getElementById("sg").value/100;document.getElementById("gv").textContent=f(G*100);document.getElementById("sv").textContent=f(SG*100);
+ CUR=sim(G,ST,SG,1);BASE=sim(0,{ot:0,s3:0,hire:0,raw:0,fleet:0,cop:0},SG);BEST=best(G,SG);const profit=(CUR.ful-BASE.ful)*CM-CUR.cost,C=caps(ST),dem=D0*(1+G);
+ const bi=CUR.bind.indexOf(Math.max(...CUR.bind)),det=C.map(c=>c/D0-1),mg=Math.min(...det);
+ document.getElementById("lv").innerHTML=LV.map(v=>`<label class="ck"><input type="checkbox" data-k="${v[0]}" ${ST[v[0]]?"checked":""}><span>${v[1]} <small>(₹${v[2]} cr/mo)</small></span></label>`).join("");
+ document.querySelectorAll("#lv input").forEach(c=>c.onchange=()=>{ST[c.dataset.k]=c.checked?1:0;render()});
+ document.getElementById("kp").innerHTML=[["Probability target is met",f(CUR.p*100)+"%"],["Expected fill rate",f(CUR.fill*100,1)+"%"],["Biggest bottleneck",CUR.p>.97?"None binding":NM[bi]],["Max supportable growth",f(mg*100,1)+"%"],["Net profit change",(profit>=0?"+":"")+"₹"+f(profit,1)+" cr/mo"]].map(a=>`<div class="k"><span>${a[0]}</span><b>${a[1]}</b></div>`).join("");
+ document.getElementById("ut").innerHTML=NM.map((n,i)=>{const u=dem/C[i];return`<div class="ub"><span>${n}</span><div class="tr"><i style="width:${Math.min(u*100,130)/1.3}%;background:${u>1?"var(--r)":u>.9?"#d97706":"var(--g)"}"></i></div><b class="${u>1?"r":""}">${f(u*100)}% · max +${f(det[i]*100,1)}%</b></div>`}).join("");
+ const bins=Array(12).fill(0),lo=-5,w=4;CUR.H.forEach(h=>{bins[Math.min(11,Math.max(0,Math.floor((h-lo)/w)))]++});const mx=Math.max(...bins),tx=40+(G*100-lo)/w*(260/12);
+ document.getElementById("hs").innerHTML=`<line x1="30" y1="150" x2="310" y2="150" stroke="currentColor" opacity=".3"/>`+bins.map((b,i)=>`<rect x="${34+i*(272/12)}" y="${150-b/mx*125}" width="${272/12-3}" height="${b/mx*125}" fill="${lo+i*w+w/2>=G*100-2?"var(--g)":"var(--r)"}" opacity=".75"/>`).join("")+`<line x1="${34+(G*100-lo)/w*(272/12)}" y1="15" x2="${34+(G*100-lo)/w*(272/12)}" y2="150" stroke="var(--tx)" stroke-dasharray="4"/><text x="${Math.min(200,34+(G*100-lo)/w*(272/12)+4)}" y="24">target +${f(G*100)}%</text>`+[-5,5,15,25,35].map(v=>`<text x="${34+(v-lo)/w*(272/12)-8}" y="166">${v}%</text>`).join("")+`<text x="90" y="184">Fulfilled sales growth</text>`;
+ document.getElementById("hn").innerHTML="Each bar counts simulated months; green = target reached, red = shortfall.";
+ const rows=[["Do nothing",{}],["Overtime only",{ot:1}],["Overtime + supplier buffer",{ot:1,raw:1}],["Third shift + hire + supplier + fleet",{s3:1,hire:1,raw:1,fleet:1}],["Everything incl. co-packer",{ot:1,s3:1,hire:1,raw:1,fleet:1,cop:1}],["AI-recommended: "+nm(BEST.L),BEST.L]];
+ document.getElementById("st").innerHTML="<tr><th>Strategy</th><th>Target met</th><th>Fill rate</th><th>Lever cost (₹cr/mo)</th><th>Net profit change</th></tr>"+rows.map((r,i)=>{const L={ot:0,s3:0,hire:0,raw:0,fleet:0,cop:0,...r[1]},s=sim(G,L,SG),p=(s.ful-BASE.ful)*CM-s.cost;return`<tr ${i==5?'style="font-weight:700"':""}><td>${r[0]}</td><td class="${s.p>=.85?"g":"r"}">${f(s.p*100)}%</td><td>${f(s.fill*100,1)}%</td><td>${f(s.cost,1)}</td><td class="${p>=0?"g":"r"}">${p>=0?"+":""}${f(p,1)}</td></tr>`}).join("");
+ agent(C,det,bi,mg,profit)}
+function agent(C,det,bi,mg,profit){const sh=det.map((d,i)=>[NM[i],d]).sort((a,b)=>a[1]-b[1]),B=BEST;const need=G>mg;
+ document.getElementById("ag").innerHTML=`<p><b>Verdict:</b> ${need?`today’s setup supports only about +${f(mg*100,1)}% growth, so a +${f(G*100)}% target is not safe. ${sh[0][0]} is the tightest constraint, followed by ${sh[1][0]}.`:`the current setup can support +${f(G*100)}% on paper, but disruptions still cause shortfalls in ${f((1-CUR.p)*100)}% of simulated months.`}</p><p><b>Best plan:</b> ${nm(B.L)} gives a ${f(B.r.p*100)}% chance of meeting the target at ₹${f(B.r.cost,1)} cr per month, for a net profit gain of ₹${f((B.r.ful-BASE.ful)*CM-B.r.cost,1)} cr per month.</p><p><b>Watch-outs:</b> overtime raises absenteeism and breakdown risk, and a third shift needs hiring to be usable. Re-run this simulation each quarter with live ERP data.</p>`}
+function ans(t){t=t.toLowerCase(),C=caps(ST),det=C.map(c=>c/D0-1);
+ if(/bottleneck|constraint|limit|tight/.test(t))return NM.map((n,i)=>[n,det[i]]).sort((a,b)=>a[1]-b[1]).map(x=>`${x[0]} (max +${f(x[1]*100,1)}%)`).join(", ")+" (tightest first, with current levers).";
+ if(/max|how much|support|possible/.test(t))return `With the selected levers the plant can support about +${f(Math.min(...det)*100,1)}% growth; with no levers, +${f(Math.min(...caps({ot:0,s3:0,hire:0,raw:0,fleet:0,cop:0}).map(c=>c/D0-1))*100,1)}%.`;
+ if(/recommend|best|plan|should|do/.test(t))return `Cheapest plan with at least 85% chance of success: ${nm(BEST.L)} (${f(BEST.r.p*100)}% success, ₹${f(BEST.r.cost,1)} cr/month).`;
+ if(/cost|profit|money|margin/.test(t))return `Selected levers cost ₹${f(CUR.cost,1)} cr/month. Net profit change vs today: ₹${f((CUR.ful-BASE.ful)*CM-CUR.cost,1)} cr/month at a 22% contribution margin.`;
+ if(/risk|chance|probab/.test(t))return `The selected setup meets the +${f(G*100)}% target in ${f(CUR.p*100)}% of simulated months; the average fill rate is ${f(CUR.fill*100,1)}%.`;
+ return "Try asking about the bottleneck, how much growth is possible, the best plan, costs or risk."}
+document.getElementById("gr").oninput=render;document.getElementById("sg").oninput=render;
+const go=()=>{const q=document.getElementById("q");document.getElementById("ans").innerHTML=`<p><b>Q:</b> ${q.value.replace(/</g,"&lt;")}<br>${ans(q.value)}</p>`};
+document.getElementById("ask").onclick=go;document.getElementById("q").onkeydown=e=>{if(e.key=="Enter")go()};
+render();
+</script></body></html>
